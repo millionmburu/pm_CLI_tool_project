@@ -1,0 +1,30 @@
+{
+    "users": {
+        "millionmureithimburu@gmail.com": {
+            "name": "Million",
+            "email": "millionmureithimburu@gmail.com",
+            "projects": [
+                "Command_line_project"
+            ]
+        },
+        "william@gmail.com": {
+            "name": "William",
+            "email": "william@gmail.com",
+            "projects": []
+        }
+    },
+    "projects": {
+        "Command_line_project": {
+            "title": "Command_line_project",
+            "description": "A CLI using python",
+            "due_date": "19/7/2026",
+            "tasks": [
+                {
+                    "title": "Create the models",
+                    "assigned_to": "Million",
+                    "status": "Complete"
+                }
+            ]
+        }
+    }
+}

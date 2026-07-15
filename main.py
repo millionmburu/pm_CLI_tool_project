@@ -43,7 +43,7 @@ def create_user(db: dict):
         new_user = User(name=name, email=email)
 
         #saves to the database state
-        db["user"][new_user.email]= new_user.to_dict()
+        db["users"][new_user.email]= new_user.to_dict()
         save_data(db)
         console.print(f"[bold green]Success: Created user '{new_user.name}'! Data saved to disk.[/bold green]")
 
@@ -70,3 +70,176 @@ def view_users(db: dict):
 
     console.print(table)
     
+def create_project(db: dict):
+    #Handles the creation of new projects
+    console.print("\n[bold yellow]--- Create Project ---[/bold yellow]")
+    title = input("Enter the project's title: ").strip()
+    desc = input("Enter the project's description: ").strip()
+    due_date = input("Enter the due date for the project(Format in YYYY-MM-DD): ").strip()
+
+    #Incase the title for the project is left empty
+    if not title:
+        console.print("[bold red]Error: title cannot be empty![/bold red]")
+    
+    #Incase the project already exists
+    if title in db["projects"]:
+        console.print("[bold red]Error: Project already exists![/bold red]")
+        return
+    try: 
+        new_project = Project(title=title, description=desc, due_date=due_date)
+        db["projects"][title] = new_project.to_dict()
+        save_data(db)
+
+        console.print(f"[bold green]Success: Created project '{title}'! Data saved to disk.[/bold green]")
+    except ValueError as e:
+        console.print(f"\n[bold red]Validation Error: {e}[/bold red]")    
+
+def view_projects(db: dict):
+    #Displays all the projects present in a table format
+    console.print("\n[bold yellow]--- Project List ---[/bold yellow]")
+
+    #Incase Project list is blank
+    if not db["projects"]:
+        console.print("[italic white]No Projects found. Create a new project[/italic white]")
+        return
+    
+    for title, proj_data in db["projects"].items():
+        #displays the project header
+        project_header = f"[bold cyan]{title}[/bold cyan] | [italic]Due: {proj_data['due_date']}[/italic]\n[white]{proj_data['description']}[/white]"
+        console.print(Panel(project_header, border_style="blue"))
+
+        #renders tasks inside the project block 
+        tasks = proj_data.get("tasks", [])
+        if not tasks:
+            console.print("  [dim italic white]No tasks added to this project yet.[/dim italic white]\n")
+            continue
+        table = Table(show_header=True, header_style="bold blue")
+        table.add_column("Task Title", style="white")
+        table.add_column("Assigned To", style="magenta")
+        table.add_column("Status", style="bold green", justify="center")
+        
+        for task in tasks:
+            status_color = "green" if task["status"] == "Complete" else "yellow"
+            status_text = f"[{status_color}]{task['status']}[/{status_color}]"
+            table.add_row(task["title"], task["assigned_to"], status_text)
+
+        console.print(table)
+        console.print("") #Line separator
+
+def add_task_to_project(db: dict):
+    #Adds a new task to existing projects
+    console.print("\n[bold yellow]--- Add Task to Project ---[/bold yellow]")
+
+    #Incase project is non_existant
+    if not db["projects"]:
+        console.print("[bold red]Error: No projects exist yet. Create a project first.[/bold red]")
+        return
+
+    project_title = input("Enter the project's name required to add the task to: ").strip()
+        
+    #Incase the project title inputed is non_existant
+    if project_title not in db["projects"]:
+        console.print("[bold red]Error: Project not found.[/bold red]")
+        return
+        
+    task_title = input("Enter the task's name: ").strip()
+    assigned_email = input("Enter the assigned's email address(press enter to leave it unassigned): ").strip()
+
+    #Verifies whether the assigned exists in the database
+    assignee_name = "Unassigned"
+
+    if assigned_email:
+        if assigned_email in db["users"]:
+            assignee_name = db["users"][assigned_email]["name"]
+        else:
+            console.print("[bold red]Error: Assigned email matches no registered user. Setting task as Unassigned.[/bold red]")
+
+    #Creates the task object
+    new_task = Task(title=task_title, assigned_to=assignee_name)
+        
+    # Reconstruct project object, add task, and convert back to dictionary
+    proj_data = db["projects"][project_title]
+    project_obj = Project(proj_data["title"], proj_data["description"], proj_data["due_date"])
+
+    # Reload existing tasks as objects into our class
+    for t_data in proj_data.get("tasks", []):
+        project_obj.add_task(Task(t_data["title"], t_data["assigned_to"], t_data["status"]))
+
+    #Appends the new task 
+    project_obj.add_task(new_task)
+
+    #Updates and saves the database
+    db["projects"][project_title] = project_obj.to_dict()
+
+    # Add project reference to user's project list if assigned
+    if assigned_email and assigned_email in db["users"]:
+        if project_title not in db["users"][assigned_email]["projects"]:
+            db["users"][assigned_email]["projects"].append(project_title)
+
+    save_data(db)
+    console.print(f"[bold green]Success: Task '{task_title}' added to project '{project_title}'![/bold green]")
+
+def mark_complete_tasks(db:dict):
+    #Changes the status of tasks that are completed to "Complete" inside projects
+    console.print("\n[bold yellow]--- Mark Task as Complete ---[/bold yellow]")
+    project_title = input("Enter the project's title: ").strip()
+
+    if project_title not in db["projects"]:
+        console.print("[bold red]Error: Project not found.[/bold red]")
+        return
+
+    task_title = input("Enter the exact task that has been completed: ").strip()
+    proj_data = db["projects"][project_title]
+
+    task_found = False
+
+    #Looks through the data of tasks in the storage file
+    for task_data in proj_data.get("tasks", []):
+        if task_data["title"].lower() == task_title.lower():
+            # Reconstruct the task, complete it, and save the updated status
+            task_obj = Task(task_data["title"], task_data["assigned_to"], task_data["status"])
+            task_obj.mark_complete()
+            task_data["status"] = task_obj.status
+            task_found = True
+            break
+    if task_found:
+        save_data(db)
+        console.print(f"[bold green]Success: Task '{task_title}' is now marked complete![/bold green]")
+    else:
+        console.print("[bold red]Error: Task not found in that project.[/bold red]")
+
+def main():
+    #The main application cycle
+    """Main application loop."""
+    # Load persistence database dictionary
+    db = load_data()
+    
+    console.print("[bold green]Welcome to the Project Management CLI Tool![/bold green]")
+    
+    while True:
+        display_menu()
+        choice = input("Enter your command option (1-7): ").strip()
+        
+        if choice == "1":
+            create_user(db)
+        elif choice == "2":
+            view_users(db)
+        elif choice == "3":
+            create_project(db)
+        elif choice == "4":
+            view_projects(db)
+        elif choice == "5":
+            add_task_to_project(db)
+        elif choice == "6":
+            mark_complete_tasks(db)
+        elif choice == "7":
+            console.print("[bold cyan]Goodbye! Have an productive day.[/bold cyan]")
+            sys.exit(0)
+        else:
+            console.print("[bold red]Invalid option. Please enter a number between 1 and 7.[/bold red]")
+
+if __name__ == "__main__":
+    main()
+
+
+
