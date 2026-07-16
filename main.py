@@ -80,9 +80,12 @@ def create_project(db: dict):
     #Incase the title for the project is left empty
     if not title:
         console.print("[bold red]Error: title cannot be empty![/bold red]")
+        return
     
+    #To deal with case insensitivity
+    existing_titles_lower = {existing_title.lower() for existing_title in db["projects"]}
     #Incase the project already exists
-    if title in db["projects"]:
+    if title.lower() in existing_titles_lower:
         console.print("[bold red]Error: Project already exists![/bold red]")
         return
     try: 
@@ -135,14 +138,36 @@ def add_task_to_project(db: dict):
         console.print("[bold red]Error: No projects exist yet. Create a project first.[/bold red]")
         return
 
-    project_title = input("Enter the project's name required to add the task to: ").strip()
+    input_project_title = input("Enter the project's name required to add the task to: ").strip()
+
+    #Matching project with case insesnitivity
+    project_title = None
+    for actual_key in db["projects"]:
+        if actual_key.lower() == input_project_title.lower():
+            project_title = actual_key
+            break
         
     #Incase the project title inputed is non_existant
-    if project_title not in db["projects"]:
+    if not project_title:
         console.print("[bold red]Error: Project not found.[/bold red]")
         return
         
     task_title = input("Enter the task's name: ").strip()
+
+    # Ensure task name is not empty
+    if not task_title:
+        console.print("[bold red]Error: Task name cannot be empty.[/bold red]")
+        return
+
+    # Check if a task with this name already exists in this project
+    proj_data = db["projects"][project_title]
+    existing_tasks = proj_data.get("tasks", [])
+    existing_task_names_lower = {task["title"].lower() for task in existing_tasks}
+    
+    if task_title.lower() in existing_task_names_lower:
+        console.print(f"[bold red]Error: A task named '{task_title}' already exists in this project.[/bold red]")
+        return
+    
     assigned_email = input("Enter the assigned's email address(press enter to leave it unassigned): ").strip()
 
     #Verifies whether the assigned exists in the database
@@ -159,7 +184,11 @@ def add_task_to_project(db: dict):
         
     # Reconstruct project object, add task, and convert back to dictionary
     proj_data = db["projects"][project_title]
-    project_obj = Project(proj_data["title"], proj_data["description"], proj_data["due_date"])
+    try:
+        project_obj = Project(proj_data["title"], proj_data["description"], proj_data["due_date"])
+    except ValueError as e:
+        console.print(f"[bold red]Database Error: The project '{project_title}' has an invalid due date format in storage. ({e})[/bold red]")
+        return
 
     # Reload existing tasks as objects into our class
     for t_data in proj_data.get("tasks", []):
@@ -182,13 +211,25 @@ def add_task_to_project(db: dict):
 def mark_complete_tasks(db:dict):
     #Changes the status of tasks that are completed to "Complete" inside projects
     console.print("\n[bold yellow]--- Mark Task as Complete ---[/bold yellow]")
-    project_title = input("Enter the project's title: ").strip()
+    input_project_title = input("Enter the project's title: ").strip()
 
-    if project_title not in db["projects"]:
+    #Matching project with case insensitivity
+    project_title = None
+    for actual_key in db["projects"]:
+        if actual_key.lower() == input_project_title.lower():
+            project_title = actual_key
+            break
+
+    if not project_title:
         console.print("[bold red]Error: Project not found.[/bold red]")
         return
 
     task_title = input("Enter the exact task that has been completed: ").strip()
+
+    if not task_title:
+        console.print("[bold red]Error: Task name cannot be empty.[/bold red]")
+        return
+    
     proj_data = db["projects"][project_title]
 
     task_found = False

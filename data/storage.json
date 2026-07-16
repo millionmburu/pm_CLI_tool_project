@@ -17,14 +17,25 @@
         "Command_line_project": {
             "title": "Command_line_project",
             "description": "A CLI using python",
-            "due_date": "19/7/2026",
+            "due_date": "2026-07-19",
             "tasks": [
                 {
                     "title": "Create the models",
                     "assigned_to": "Million",
                     "status": "Complete"
+                },
+                {
+                    "title": "modify the models",
+                    "assigned_to": "Unassigned",
+                    "status": "Pending"
                 }
             ]
+        },
+        "Cash register": {
+            "title": "Cash register",
+            "description": "Create a cash register using python",
+            "due_date": "2026-07-21",
+            "tasks": []
         }
     }
 }
