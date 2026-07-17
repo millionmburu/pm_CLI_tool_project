@@ -1,4 +1,5 @@
 
+import argparse
 import sys
 
 from models.user import User
@@ -254,6 +255,35 @@ def main():
     """Main application loop."""
     # Load persistence database dictionary
     db = load_data()
+
+    #Argparse interceptor
+
+    #If any command line arguments are given, use argparse to process subcommands
+    if len(sys.argv) > 1:
+        parser = argparse.ArgumentParser(description="Project Management CLI Tool Subcommands")
+        subparsers = parser.add_subparsers(dest="command")
+
+        subparsers.add_parser("add-user", help="Create a user profile")
+        subparsers.add_parser("add-project", help="Create a new workspace project")
+        subparsers.add_parser("add-task", help="Launches interactive task addition workflow")
+        subparsers.add_parser("complete-task", help="Launches interactive task completion workflow")
+        subparsers.add_parser("list-projects", help="Display all projects and inner tasks")
+
+        args = parser.parse_args()
+
+        if args.command == "add-user":
+            create_user(db)
+        elif args.command == "add-project":
+            create_project(db)
+        elif args.command == "add-task":
+            add_task_to_project(db)
+        elif args.command == "complete-task":
+            mark_complete_tasks(db)
+        elif args.command == "list-projects":
+            view_projects(db)
+        else:
+            parser.print_help()
+        return
     
     console.print("[bold green]Welcome to the Project Management CLI Tool![/bold green]")
     
@@ -274,8 +304,8 @@ def main():
         elif choice == "6":
             mark_complete_tasks(db)
         elif choice == "7":
-            console.print("[bold cyan]Goodbye! Have an productive day.[/bold cyan]")
-            sys.exit(0)
+            console.print("[bold cyan]Goodbye! Have an Nice day.[/bold cyan]")
+            break
         else:
             console.print("[bold red]Invalid option. Please enter a number between 1 and 7.[/bold red]")
 
