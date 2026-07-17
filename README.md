@@ -1,7 +1,9 @@
 **<========PYTHON PROJECT MANAGEMENT CLI TOOL========>**
+
 A polished, interactive Project Management Command-Line Interface (CLI) application built with Python. This tool helps you manage users, organize projects, and track underlying tasks with a beautiful terminal user interface.
 
 **<========Features========>**
+
 Interactive Menu UI: A structured, colorful terminal interface built using the Rich library.
 
 Dual Execution Modes:
@@ -15,6 +17,7 @@ Strong Validation: Robust checks for email formats, empty fields, case-insensiti
 Local Persistence: Data automatically reads from and writes to disk on every modification.
 
 **<======== Project Structure========>**
+
 Ensure your workspace is organized exactly like this for the module paths to resolve correctly:
 
 Plaintext
@@ -26,25 +29,29 @@ Plaintext
 │   └── storage_handler.py
 └── main.py
 
-<======== Getting Started ========>
+**<======== Getting Started ========>**
+
 Prerequisites
 Python 3.8 or higher
 
 pip (Python package installer)
 
 **1. Installation**
+
 Clone or navigate to your project directory and install the required dependencies:
 
 Bash
 pip install rich
 
 **2. Running Interactive Mode**
+
 To open the colorful main menu loop and interact with the system step-by-step, run:
 
 Bash
 python main.py
 
 **3. Running Subcommand Mode (Automation)**
+
 You can completely bypass the interactive menu by executing direct subcommands. This is highly useful for automated testing and grading scripts:
 
 List current projects & tasks:
@@ -69,6 +76,7 @@ Bash
 python main.py complete-task
 
 **<========Core Dependencies========>**
+
 Rich: Handles the terminal panels, stylized input tables, and custom logging syntax colors.
 
 Argparse & Sys: Native standard library components routing system line configurations and exit signals safely.
