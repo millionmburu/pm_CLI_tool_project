@@ -57,22 +57,31 @@ You can completely bypass the interactive menu by executing direct subcommands. 
 List current projects & tasks:
 
 Bash
+
 python main.py list-projects
+
 Launch user creation wizard directly:
 
 Bash
+
 python main.py add-user
+
 Launch project creation wizard directly:
 
 Bash
+
 python main.py add-project
+
 Launch task assignment wizard directly:
 
 Bash
+
 python main.py add-task
+
 Launch task completion wizard directly:
 
 Bash
+
 python main.py complete-task
 
 **<========Core Dependencies========>**
